@@ -1,0 +1,223 @@
+// Prisma schema — Cashback platform
+// learn more: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum ShopNetwork {
+  SHOPEE
+  LAZADA
+  TIKI
+  TIKTOK
+  SHOPEEFOOD
+}
+
+enum TransactionStatus {
+  PENDING
+  CONFIRMED
+  EXPIRED
+  REJECTED
+}
+
+enum PayoutStatus {
+  PENDING
+  APPROVED
+  PAID
+  REJECTED
+}
+
+enum MembershipTier {
+  MEMBER
+  SILVER
+  GOLD
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+model User {
+  id            String         @id @default(cuid())
+  email         String         @unique
+  passwordHash  String?
+  name          String
+  role          UserRole       @default(USER)
+  isBlocked     Boolean        @default(false)
+  /// Telegram chat id linked via a one-time code from /telegram in the dashboard. Lets the
+  /// KBack Telegram bot resolve which KBack account a message came from, so paste-link clicks
+  /// (and their eventual cashback) are attributed to the right user's wallet.
+  telegramChatId String?       @unique
+  createdAt     DateTime       @default(now())
+  clicks        Click[]
+  transactions  Transaction[]
+  payoutRequests PayoutRequest[]
+  telegramLinkCodes TelegramLinkCode[]
+  createdProducts Product[]
+}
+
+/// Short-lived one-time code shown on /telegram for the user to send to the bot as
+/// `/start <code>`, linking their Telegram chat to their KBack account without requiring a
+/// password inside Telegram.
+model TelegramLinkCode {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  userId    String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Shop {
+  id            String        @id @default(cuid())
+  slug          String        @unique
+  name          String
+  logoEmoji     String        @default("🛍️")
+  network       ShopNetwork
+  cashbackRate  Float         // percent, e.g. 5.5 = 5.5%
+  baseUrl       String
+  description   String        @default("")
+  /// AccessTrade campaign_id for this shop (each merchant is a separate campaign on
+  /// AccessTrade). Required for real Deep Link API calls once AFFILIATE_PROVIDER=accesstrade;
+  /// unused while running on the mock provider.
+  accessTradeCampaignId String?
+  createdAt     DateTime      @default(now())
+  clicks        Click[]
+  transactions  Transaction[]
+  products      Product[]
+}
+
+model Click {
+  id          String        @id @default(cuid())
+  userId      String
+  shopId      String
+  trackingId  String        @unique
+  targetUrl   String
+  /// Original product/share URL pasted by the user, when the click originated from the
+  /// "paste a link" flow instead of picking a shop from the catalog.
+  sourceUrl   String?
+  createdAt   DateTime      @default(now())
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  shop        Shop          @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  transaction Transaction?
+  product     Product?
+}
+
+model Transaction {
+  id             String             @id @default(cuid())
+  userId         String
+  shopId         String
+  clickId        String?            @unique
+  orderAmount    Float
+  /// Full commission paid by the affiliate network before the platform's membership-tier split.
+  baseCashbackAmount Float          @default(0)
+  /// Amount actually credited to the user's wallet, after applying their membership tier share.
+  cashbackAmount Float
+  /// Membership tier the user held at the time this transaction's cashback was credited.
+  memberTier     MembershipTier     @default(MEMBER)
+  status         TransactionStatus  @default(PENDING)
+  externalOrderId String?
+  createdAt      DateTime           @default(now())
+  confirmedAt    DateTime?
+  user           User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  shop           Shop               @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  click          Click?             @relation(fields: [clickId], references: [id], onDelete: SetNull)
+}
+
+enum ProductImageSource {
+  UPLOADED
+  AI_GENERATED
+}
+
+enum VideoStatus {
+  PENDING
+  GENERATING_MODEL_IMAGE
+  GENERATING_CLIPS
+  RENDERING
+  COMPLETED
+  FAILED
+}
+
+model Product {
+  id                String             @id @default(cuid())
+  shopId            String
+  name              String
+  description       String             @default("")
+  imageUrl          String
+  imageSource       ProductImageSource @default(UPLOADED)
+  /// Original product page URL on the merchant's site — same concept as Click.sourceUrl.
+  sourceUrl         String
+  /// Static per-product deep link, created via getAffiliateProvider().createDeepLink() so it
+  /// can be pasted into TikTok Shop. Backed by `click` below (unlike the pure-string deep link
+  /// this started as) so it flows through the same AccessTrade postback/Transaction pipeline as
+  /// the user-facing cashback flow, giving this link real click/conversion tracking.
+  affiliateDeepLink String?
+  /// Admin user who created this product/link — for multi-admin attribution as the team grows.
+  createdByUserId   String?
+  /// The Click backing affiliateDeepLink's subId. Regenerating the link (e.g. after editing
+  /// sourceUrl) creates a new Click and repoints this — old Clicks are kept for history instead
+  /// of being deleted, so past tracking data isn't lost.
+  clickId           String?            @unique
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  shop              Shop               @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  createdBy         User?              @relation(fields: [createdByUserId], references: [id], onDelete: SetNull)
+  click             Click?             @relation(fields: [clickId], references: [id], onDelete: SetNull)
+  videos            GeneratedVideo[]
+}
+
+model GeneratedVideo {
+  id              String      @id @default(cuid())
+  productId       String
+  status          VideoStatus @default(PENDING)
+  durationSeconds Int         @default(10)
+  /// Model wearing the product's outfit (nano-banana-edit output) — reused as the first frame
+  /// for every clip below so face/outfit stay consistent across the whole video.
+  modelImageUrl   String?
+  /// Uploaded trending background-music track muxed into the final render (see lib/storage) —
+  /// replaces voiceover; no TTS is generated for this video.
+  musicUrl        String?
+  errorMessage    String?
+  finalVideoUrl   String?
+  createdAt       DateTime    @default(now())
+  completedAt     DateTime?
+  product         Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  clips           VideoClip[]
+}
+
+model VideoClip {
+  id             String      @id @default(cuid())
+  videoId        String
+  sequence       Int
+  /// kie.ai task id for this clip's Kling image-to-video job — correlates the webhook callback.
+  externalTaskId String?     @unique
+  status         VideoStatus @default(PENDING)
+  clipUrl        String?
+  errorMessage   String?
+  createdAt      DateTime    @default(now())
+  video          GeneratedVideo @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  @@unique([videoId, sequence])
+}
+
+model PayoutRequest {
+  id          String        @id @default(cuid())
+  userId      String
+  amount      Float
+  status      PayoutStatus  @default(PENDING)
+  bankName    String
+  bankAccountNumber String
+  bankAccountName   String
+  providerRef String?
+  note        String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

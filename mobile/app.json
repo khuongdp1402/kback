@@ -1,0 +1,31 @@
+{
+  "expo": {
+    "name": "KBack",
+    "slug": "kback",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "scheme": "kback",
+    "backgroundColor": "#fbf8f2",
+    "extra": {
+      "kbackUrl": "https://kback-app.vercel.app"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "app.kback.mobile"
+    },
+    "android": {
+      "package": "app.kback.mobile",
+      "adaptiveIcon": {
+        "backgroundColor": "#a97318",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}
