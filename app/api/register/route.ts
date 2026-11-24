@@ -2,14 +2,24 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 const registerSchema = z.object({
-  name: z.string().min(2, "Tên phải có ít nhất 2 ký tự"),
-  email: z.string().email("Email không hợp lệ"),
-  password: z.string().min(6, "Mật khẩu phải có ít nhất 6 ký tự"),
+  name: z.string().trim().min(2, "Tên phải có ít nhất 2 ký tự").max(100),
+  email: z.string().trim().toLowerCase().email("Email không hợp lệ"),
+  password: z.string().min(6, "Mật khẩu phải có ít nhất 6 ký tự").max(128),
 });
 
 export async function POST(request: Request) {
+  const ip = getClientIp(request);
+  const limit = checkRateLimit(`register:${ip}`, 10, 15 * 60 * 1000);
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: "Bạn thao tác quá nhanh. Vui lòng thử lại sau ít phút." },
+      { status: 429, headers: { "Retry-After": String(limit.retryAfterSec) } },
+    );
+  }
+
   const body = await request.json().catch(() => null);
   const parsed = registerSchema.safeParse(body);
 

@@ -5,6 +5,7 @@ import { Logo } from "@/components/logo";
 import { DashboardSidebarNav, DashboardBottomNav } from "@/components/dashboard-nav";
 import { SignOutButton } from "@/components/sign-out-button";
 import { ClipboardLinkDetector } from "@/components/clipboard-link-detector";
+import { PwaInstallBanner } from "@/components/pwa-register";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
@@ -42,7 +43,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
       </header>
 
       <main className="flex-1 px-4 py-6 pb-24 sm:px-6 md:pb-6">
-        <div className="mx-auto max-w-5xl">{children}</div>
+        <div className="mx-auto max-w-5xl">
+          <PwaInstallBanner />
+          {children}
+        </div>
       </main>
 
       <DashboardBottomNav />

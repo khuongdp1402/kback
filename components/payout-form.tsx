@@ -32,8 +32,8 @@ export function PayoutForm({ availableBalance }: { availableBalance: number }) {
     setSuccess(false);
 
     const numericAmount = Number(amount);
-    if (!numericAmount || numericAmount <= 0) {
-      setError("Vui lòng nhập số tiền hợp lệ");
+    if (!numericAmount || numericAmount < 10000) {
+      setError("Số tiền rút tối thiểu là 10.000₫");
       return;
     }
     if (numericAmount > availableBalance) {
@@ -76,7 +76,7 @@ export function PayoutForm({ availableBalance }: { availableBalance: number }) {
         <input
           id="amount"
           type="number"
-          min={1}
+          min={10000}
           max={availableBalance}
           value={amount}
           onChange={(e) => setAmount(e.target.value)}

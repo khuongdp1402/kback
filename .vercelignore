@@ -1,2 +1,13 @@
 # Separate Expo/React Native project — not part of the Next.js web app deployment.
 mobile
+
+# Never upload local env files or local generated artifacts to Vercel
+.env
+.env.*
+!.env.example
+app/generated/prisma
+
+# Docker files are for self-hosted deployments only
+Dockerfile
+docker-compose.yml
+.env.docker

@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { LoginForm } from "@/components/auth/login-form";
+import { isGoogleAuthConfigured } from "@/lib/auth";
 
 export default function LoginPage() {
+  const googleEnabled = isGoogleAuthConfigured();
   return (
     <Card className="p-8">
       <h1 className="text-xl font-semibold text-foreground">Đăng nhập</h1>
@@ -10,7 +12,7 @@ export default function LoginPage() {
         Chào mừng quay lại KBack, tiếp tục nhận hoàn tiền cho mỗi đơn hàng.
       </p>
       <div className="mt-6">
-        <LoginForm />
+        <LoginForm googleEnabled={googleEnabled} />
       </div>
       <p className="mt-6 text-center text-sm text-muted-foreground">
         Chưa có tài khoản?{" "}

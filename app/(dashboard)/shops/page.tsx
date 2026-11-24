@@ -3,8 +3,15 @@ import { Card } from "@/components/ui/card";
 import { LinkButton } from "@/components/ui/button";
 import { PasteLinkForm } from "@/components/paste-link-form";
 
-export default async function ShopsPage() {
-  const shops = await prisma.shop.findMany({ orderBy: { cashbackRate: "desc" } });
+export default async function ShopsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string; shop?: string }>;
+}) {
+  const [shops, query] = await Promise.all([
+    prisma.shop.findMany({ orderBy: { cashbackRate: "desc" } }),
+    searchParams,
+  ]);
 
   return (
     <div className="space-y-8">
@@ -14,6 +21,14 @@ export default async function ShopsPage() {
           Bấm &quot;Mua ngay&quot; để mở shop qua liên kết theo dõi hoàn tiền của KBack.
         </p>
       </div>
+
+      {query.error === "link_unavailable" && (
+        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          Không thể tạo liên kết hoàn tiền cho{" "}
+          <strong>{query.shop ?? "sàn này"}</strong> ngay lúc này. Vui lòng thử lại sau hoặc kiểm
+          tra cấu hình chiến dịch affiliate.
+        </div>
+      )}
 
       <div
         className="rounded-2xl border border-border p-6"

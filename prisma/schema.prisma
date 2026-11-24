@@ -108,6 +108,8 @@ model Click {
   shop        Shop          @relation(fields: [shopId], references: [id], onDelete: Cascade)
   transaction Transaction?
   product     Product?
+
+  @@index([userId, createdAt])
 }
 
 model Transaction {
@@ -129,6 +131,9 @@ model Transaction {
   user           User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   shop           Shop               @relation(fields: [shopId], references: [id], onDelete: Cascade)
   click          Click?             @relation(fields: [clickId], references: [id], onDelete: SetNull)
+
+  @@index([userId, status])
+  @@index([userId, createdAt])
 }
 
 enum ProductImageSource {
@@ -220,4 +225,7 @@ model PayoutRequest {
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
   user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+  @@index([userId, createdAt])
 }

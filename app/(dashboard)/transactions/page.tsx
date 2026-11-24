@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { formatVnd, formatDate } from "@/lib/format";
@@ -7,8 +8,11 @@ import { tierInfo } from "@/lib/membership";
 
 export default async function TransactionsPage() {
   const session = await auth();
+  if (!session?.user?.id) {
+    redirect("/login");
+  }
   const transactions = await prisma.transaction.findMany({
-    where: { userId: session!.user.id },
+    where: { userId: session.user.id },
     include: { shop: true },
     orderBy: { createdAt: "desc" },
   });

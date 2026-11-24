@@ -19,7 +19,7 @@ export interface KieTaskRecord {
 }
 
 function getApiKey(): string {
-  const key = process.env.KIE_API_KEY;
+  const key = process.env.KIE_API_KEY?.trim();
   if (!key) {
     throw new Error(
       "KIE_API_KEY chưa được cấu hình trong .env — cần key thật từ https://kie.ai để dùng tính năng tạo video.",
@@ -29,7 +29,7 @@ function getApiKey(): string {
 }
 
 function getBaseUrl(): string {
-  return process.env.KIE_API_BASE_URL ?? "https://api.kie.ai";
+  return (process.env.KIE_API_BASE_URL ?? "https://api.kie.ai").trim().replace(/\/+$/, "");
 }
 
 export async function createKieTask(

@@ -40,8 +40,30 @@ const faqs = [
   },
 ];
 
+export const revalidate = 300;
+
+const FALLBACK_SHOPS = [
+  { id: "shopee", name: "Shopee", logoEmoji: "🛒", cashbackRate: 4.5 },
+  { id: "lazada", name: "Lazada", logoEmoji: "🛍️", cashbackRate: 3.8 },
+  { id: "tiki", name: "Tiki", logoEmoji: "📚", cashbackRate: 3.2 },
+  { id: "tiktok-shop", name: "TikTok Shop", logoEmoji: "🎵", cashbackRate: 5.0 },
+  { id: "shopeefood", name: "ShopeeFood", logoEmoji: "🍜", cashbackRate: 6.0 },
+];
+
 export default async function LandingPage() {
-  const shops = await prisma.shop.findMany({ orderBy: { cashbackRate: "desc" } });
+  let shops: { id: string; name: string; logoEmoji: string; cashbackRate: number }[] =
+    FALLBACK_SHOPS;
+  try {
+    const dbShops = await prisma.shop.findMany({
+      orderBy: { cashbackRate: "desc" },
+      select: { id: true, name: true, logoEmoji: true, cashbackRate: true },
+    });
+    if (dbShops.length > 0) {
+      shops = dbShops;
+    }
+  } catch (err) {
+    console.error("[landing] Failed to load shops from DB, using fallback list:", err);
+  }
   const topRate = shops[0]?.cashbackRate ?? 6;
 
   return (

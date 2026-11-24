@@ -2,9 +2,10 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { createAffiliateLinkForUser } from "@/lib/create-affiliate-link";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 const bodySchema = z.object({
-  url: z.string().min(1, "Vui lòng nhập đường dẫn sản phẩm"),
+  url: z.string().trim().min(1, "Vui lòng nhập đường dẫn sản phẩm").max(2048),
 });
 
 /**
@@ -16,6 +17,14 @@ export async function POST(request: Request) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Chưa đăng nhập" }, { status: 401 });
+  }
+
+  const limit = checkRateLimit(`paste-link:${session.user.id}`, 30, 60 * 1000);
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: "Bạn tạo liên kết quá nhanh. Vui lòng thử lại sau ít giây." },
+      { status: 429, headers: { "Retry-After": String(limit.retryAfterSec) } },
+    );
   }
 
   const parsed = bodySchema.safeParse(await request.json().catch(() => null));

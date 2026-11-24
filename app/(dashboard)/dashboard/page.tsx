@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getWalletSummary } from "@/lib/wallet";
@@ -12,7 +13,10 @@ import { PasteLinkForm } from "@/components/paste-link-form";
 
 export default async function DashboardPage() {
   const session = await auth();
-  const userId = session!.user.id;
+  if (!session?.user?.id) {
+    redirect("/login");
+  }
+  const userId = session.user.id;
 
   const [wallet, membership, recentTransactions] = await Promise.all([
     getWalletSummary(userId),
@@ -29,7 +33,7 @@ export default async function DashboardPage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-bold text-foreground">
-          Chào {session!.user.name?.split(" ").pop()} 👋
+          Chào {session.user.name?.split(" ").pop()} 👋
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Dán link mua sắm để tạo liên kết nhận hoàn tiền hoặc quản lý số dư của bạn.

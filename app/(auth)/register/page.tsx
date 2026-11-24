@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { RegisterForm } from "@/components/auth/register-form";
+import { isGoogleAuthConfigured } from "@/lib/auth";
 
 export default function RegisterPage() {
+  const googleEnabled = isGoogleAuthConfigured();
   return (
     <Card className="p-8">
       <h1 className="text-xl font-semibold text-foreground">Tạo tài khoản</h1>
@@ -10,7 +12,7 @@ export default function RegisterPage() {
         Miễn phí đăng ký, bắt đầu nhận hoàn tiền cho mỗi đơn hàng ngay hôm nay.
       </p>
       <div className="mt-6">
-        <RegisterForm />
+        <RegisterForm googleEnabled={googleEnabled} />
       </div>
       <p className="mt-6 text-center text-sm text-muted-foreground">
         Đã có tài khoản?{" "}

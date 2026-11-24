@@ -1,11 +1,29 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { sendTelegramMessage, type TelegramUpdate } from "@/lib/telegram";
+import {
+  getAppPublicUrl,
+  sendTelegramMessage,
+  type TelegramInlineKeyboardMarkup,
+  type TelegramUpdate,
+} from "@/lib/telegram";
 import { createAffiliateLinkForUser } from "@/lib/create-affiliate-link";
 import { getWalletSummary } from "@/lib/wallet";
 import { formatVnd } from "@/lib/format";
 
 const URL_PATTERN = /https?:\/\/\S+/i;
+
+function miniAppKeyboard(path = "/dashboard", label = "📱 Mở KBack App"): TelegramInlineKeyboardMarkup {
+  return {
+    inline_keyboard: [
+      [
+        {
+          text: label,
+          web_app: { url: `${getAppPublicUrl()}${path}` },
+        },
+      ],
+    ],
+  };
+}
 
 /**
  * Telegram webhook entry point — Telegram POSTs every update (message, etc.) here.
@@ -22,9 +40,9 @@ const URL_PATTERN = /https?:\/\/\S+/i;
 export async function POST(request: Request) {
   // Optional shared-secret check: Telegram echoes back X-Telegram-Bot-Api-Secret-Token if
   // configured when registering the webhook. If TELEGRAM_WEBHOOK_SECRET is set, enforce it.
-  const expectedSecret = process.env.TELEGRAM_WEBHOOK_SECRET;
+  const expectedSecret = process.env.TELEGRAM_WEBHOOK_SECRET?.trim();
   if (expectedSecret) {
-    const receivedSecret = request.headers.get("x-telegram-bot-api-secret-token");
+    const receivedSecret = request.headers.get("x-telegram-bot-api-secret-token")?.trim();
     if (receivedSecret !== expectedSecret) {
       return NextResponse.json({ error: "Invalid secret" }, { status: 401 });
     }
@@ -107,6 +125,7 @@ async function handleStart(chatId: number, text: string) {
   await sendTelegramMessage(
     chatId,
     `✅ Đã liên kết thành công với tài khoản *${linkCode.user.email}*!\n\nGửi link sản phẩm bất kỳ để nhận link hoàn tiền, hoặc gõ /vi để xem số dư ví.`,
+    { replyMarkup: miniAppKeyboard("/dashboard", "📱 Mở KBack Mini App") },
   );
 }
 
@@ -118,6 +137,7 @@ async function handleWalletCommand(chatId: number) {
   await sendTelegramMessage(
     chatId,
     `💰 *Ví KBack*\n\nSố dư khả dụng: ${formatVnd(wallet.availableBalance)}\nChờ xác nhận: ${formatVnd(wallet.pendingBalance)}\nĐã rút: ${formatVnd(wallet.paidOut)}`,
+    { replyMarkup: miniAppKeyboard("/wallet", "💳 Mở Ví & Rút tiền") },
   );
 }
 

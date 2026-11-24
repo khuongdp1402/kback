@@ -20,5 +20,28 @@
       "type": "image/png",
       "purpose": "maskable"
     }
+  ],
+  "share_target": {
+    "action": "/share",
+    "method": "GET",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  },
+  "shortcuts": [
+    {
+      "name": "Tạo link hoàn tiền",
+      "short_name": "Dán link",
+      "url": "/dashboard",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Ví hoàn tiền",
+      "short_name": "Ví",
+      "url": "/wallet",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    }
   ]
 }

@@ -35,7 +35,7 @@ export async function POST(
   }
 
   const clipCount = Math.ceil(video.durationSeconds / CLIP_LENGTH_SECONDS);
-  const appUrl = process.env.APP_PUBLIC_URL;
+  const appUrl = process.env.APP_PUBLIC_URL?.trim().replace(/\/+$/, "");
   if (!appUrl) {
     return NextResponse.json(
       { error: "Thiếu APP_PUBLIC_URL trong .env — cần URL public để kie.ai gọi webhook về" },

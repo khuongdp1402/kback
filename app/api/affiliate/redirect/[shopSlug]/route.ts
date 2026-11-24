@@ -23,11 +23,21 @@ export async function GET(
   const trackingId = randomUUID();
   const provider = getAffiliateProvider();
 
-  const { trackedUrl } = await provider.createDeepLink({
-    targetUrl: shop.baseUrl,
-    subId: trackingId,
-    campaignId: shop.accessTradeCampaignId ?? undefined,
-  });
+  let trackedUrl: string;
+  try {
+    const result = await provider.createDeepLink({
+      targetUrl: shop.baseUrl,
+      subId: trackingId,
+      campaignId: shop.accessTradeCampaignId ?? undefined,
+    });
+    trackedUrl = result.trackedUrl;
+  } catch (err) {
+    console.error(`[affiliate redirect] createDeepLink failed for ${shop.slug}:`, err);
+    const fallbackUrl = new URL("/shops", request.url);
+    fallbackUrl.searchParams.set("error", "link_unavailable");
+    fallbackUrl.searchParams.set("shop", shop.name);
+    return NextResponse.redirect(fallbackUrl);
+  }
 
   await prisma.click.create({
     data: {

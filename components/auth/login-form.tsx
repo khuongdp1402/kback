@@ -6,7 +6,7 @@ import { signIn } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { GoogleSignInButton } from "./google-sign-in-button";
 
-export function LoginForm() {
+export function LoginForm({ googleEnabled = false }: { googleEnabled?: boolean }) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -37,14 +37,18 @@ export function LoginForm() {
 
   return (
     <div className="space-y-4">
-      <GoogleSignInButton text="Tiếp tục với Google" />
+      {googleEnabled && (
+        <>
+          <GoogleSignInButton text="Tiếp tục với Google" />
 
-      <div className="relative flex items-center justify-center">
-        <div className="w-full border-t border-border"></div>
-        <span className="bg-card px-3 text-xs font-medium text-muted-foreground uppercase">
-          Hoặc
-        </span>
-      </div>
+          <div className="relative flex items-center justify-center">
+            <div className="w-full border-t border-border"></div>
+            <span className="bg-card px-3 text-xs font-medium text-muted-foreground uppercase">
+              Hoặc
+            </span>
+          </div>
+        </>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>

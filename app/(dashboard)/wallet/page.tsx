@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getWalletSummary } from "@/lib/wallet";
@@ -10,7 +11,10 @@ import { payoutStatusLabel, payoutStatusTone } from "@/lib/transaction-status";
 
 export default async function WalletPage() {
   const session = await auth();
-  const userId = session!.user.id;
+  if (!session?.user?.id) {
+    redirect("/login");
+  }
+  const userId = session.user.id;
 
   const [wallet, membership, payoutRequests] = await Promise.all([
     getWalletSummary(userId),

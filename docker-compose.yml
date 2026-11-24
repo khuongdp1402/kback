@@ -10,12 +10,12 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-kback} -d ${POSTGRES_DB:-kback}"]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
 
   app:
     build:
@@ -27,14 +27,55 @@ services:
       postgres:
         condition: service_healthy
     env_file:
-      - .env.docker
+      - path: .env.docker
+        required: false
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://${POSTGRES_USER:-kback}:${POSTGRES_PASSWORD:-kback_secret_password_2026}@postgres:5432/${POSTGRES_DB:-kback}?schema=public}
+      AUTH_SECRET: ${AUTH_SECRET:-change-this-to-a-strong-random-32-char-secret}
+      AUTH_TRUST_HOST: "true"
+      STORAGE_PROVIDER: ${STORAGE_PROVIDER:-local_disk}
+      AFFILIATE_PROVIDER: ${AFFILIATE_PROVIDER:-mock}
+      PAYOUT_PROVIDER: ${PAYOUT_PROVIDER:-mock}
+      LEGAL_COMPLIANCE_CONFIRMED: ${LEGAL_COMPLIANCE_CONFIRMED:-false}
+      APP_PUBLIC_URL: ${APP_PUBLIC_URL:-http://localhost:3000}
     ports:
-      - "3000:3000"
+      - "${APP_PORT:-3000}:3000"
     volumes:
       - uploads_data:/app/public/uploads
+      - generated_data:/app/public/generated
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 25s
+
+  video-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: kback-video-worker
+    profiles: ["video-worker"]
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - path: .env.docker
+        required: false
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://${POSTGRES_USER:-kback}:${POSTGRES_PASSWORD:-kback_secret_password_2026}@postgres:5432/${POSTGRES_DB:-kback}?schema=public}
+      STORAGE_PROVIDER: ${STORAGE_PROVIDER:-local_disk}
+    entrypoint: []
+    command: ["npm", "run", "assemble-worker"]
+    volumes:
+      - uploads_data:/app/public/uploads
+      - generated_data:/app/public/generated
 
 volumes:
   postgres_data:
     name: kback_postgres_data
   uploads_data:
     name: kback_uploads_data
+  generated_data:
+    name: kback_generated_data

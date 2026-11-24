@@ -2,13 +2,14 @@ import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { LinkButton } from "@/components/ui/button";
 import { Logo } from "@/components/logo";
+import { DemoCheckoutActions } from "@/components/demo-checkout-actions";
 
 export default async function DemoCheckoutPage({
   searchParams,
 }: {
   searchParams: Promise<{ target?: string; sub?: string }>;
 }) {
-  const { target } = await searchParams;
+  const { target, sub } = await searchParams;
 
   return (
     <div className="flex min-h-screen flex-1 flex-col items-center justify-center bg-brand-light px-4 py-12">
@@ -23,14 +24,19 @@ export default async function DemoCheckoutPage({
         <p className="mt-2 break-all rounded-lg bg-surface-muted px-3 py-2 text-xs text-foreground">
           {target ?? "—"}
         </p>
-        <p className="mt-4 text-sm text-muted-foreground">
-          Một giao dịch mô phỏng sẽ tự động xuất hiện trong{" "}
+        <DemoCheckoutActions subId={sub} />
+        <p className="mt-4 text-xs text-muted-foreground">
+          Kiểm tra kết quả tại{" "}
           <Link href="/transactions" className="font-medium text-brand hover:underline">
             lịch sử giao dịch
           </Link>{" "}
-          của bạn sau ít phút.
+          hoặc{" "}
+          <Link href="/wallet" className="font-medium text-brand hover:underline">
+            ví hoàn tiền
+          </Link>
+          .
         </p>
-        <LinkButton href="/transactions" className="mt-6">
+        <LinkButton href="/transactions" variant="secondary" className="mt-4">
           Xem lịch sử giao dịch
         </LinkButton>
       </Card>

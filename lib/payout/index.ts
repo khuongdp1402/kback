@@ -17,11 +17,11 @@ let cached: PayoutProvider | null = null;
 export function getPayoutProvider(): PayoutProvider {
   if (cached) return cached;
 
-  const kind = process.env.PAYOUT_PROVIDER ?? "mock";
-  const clientId = process.env.VIETQR_CLIENT_ID ?? "";
-  const apiKey = process.env.VIETQR_API_KEY ?? "";
-  const baseUrl = process.env.VIETQR_API_BASE_URL ?? "https://api.vietqr.io";
-  const complianceConfirmed = process.env.LEGAL_COMPLIANCE_CONFIRMED === "true";
+  const kind = (process.env.PAYOUT_PROVIDER ?? "mock").trim();
+  const clientId = (process.env.VIETQR_CLIENT_ID ?? "").trim();
+  const apiKey = (process.env.VIETQR_API_KEY ?? "").trim();
+  const baseUrl = (process.env.VIETQR_API_BASE_URL ?? "https://api.vietqr.io").trim();
+  const complianceConfirmed = (process.env.LEGAL_COMPLIANCE_CONFIRMED ?? "").trim() === "true";
 
   if (kind === "vietqr" && clientId && apiKey && complianceConfirmed) {
     cached = new VietQRPayoutProvider(clientId, apiKey, baseUrl);

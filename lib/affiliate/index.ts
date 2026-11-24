@@ -22,12 +22,12 @@ let cached: AffiliateProvider | null = null;
 export function getAffiliateProvider(): AffiliateProvider {
   if (cached) return cached;
 
-  const kind = process.env.AFFILIATE_PROVIDER ?? "mock";
-  const complianceConfirmed = process.env.LEGAL_COMPLIANCE_CONFIRMED === "true";
+  const kind = (process.env.AFFILIATE_PROVIDER ?? "mock").trim();
+  const complianceConfirmed = (process.env.LEGAL_COMPLIANCE_CONFIRMED ?? "").trim() === "true";
 
   if (kind === "accesstrade") {
-    const apiKey = process.env.ACCESSTRADE_API_KEY ?? "";
-    const baseUrl = process.env.ACCESSTRADE_API_BASE_URL ?? "https://api.accesstrade.vn";
+    const apiKey = (process.env.ACCESSTRADE_API_KEY ?? "").trim();
+    const baseUrl = (process.env.ACCESSTRADE_API_BASE_URL ?? "https://api.accesstrade.vn").trim();
     if (apiKey && complianceConfirmed) {
       cached = new AccessTradeProvider(apiKey, baseUrl);
       return cached;
@@ -40,10 +40,11 @@ export function getAffiliateProvider(): AffiliateProvider {
       );
     }
   } else if (kind === "shopee_direct") {
-    const appId = process.env.SHOPEE_AFFILIATE_APP_ID ?? "";
-    const secret = process.env.SHOPEE_AFFILIATE_SECRET ?? "";
-    const baseUrl =
-      process.env.SHOPEE_AFFILIATE_API_BASE_URL ?? "https://open-api.affiliate.shopee.vn";
+    const appId = (process.env.SHOPEE_AFFILIATE_APP_ID ?? "").trim();
+    const secret = (process.env.SHOPEE_AFFILIATE_SECRET ?? "").trim();
+    const baseUrl = (
+      process.env.SHOPEE_AFFILIATE_API_BASE_URL ?? "https://open-api.affiliate.shopee.vn"
+    ).trim();
     if (appId && secret && complianceConfirmed) {
       cached = new ShopeeDirectProvider(appId, secret, baseUrl);
       return cached;
