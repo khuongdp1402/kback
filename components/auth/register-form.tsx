@@ -6,7 +6,15 @@ import { signIn } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { GoogleSignInButton } from "./google-sign-in-button";
 
-export function RegisterForm({ googleEnabled = false }: { googleEnabled?: boolean }) {
+export function RegisterForm({
+  googleEnabled = false,
+  afterAuthPath = "/dashboard",
+}: {
+  googleEnabled?: boolean;
+  /** Same-origin path to land on after signup (must start with "/"). */
+  afterAuthPath?: string;
+}) {
+  const destination = afterAuthPath.startsWith("/") && !afterAuthPath.startsWith("//") ? afterAuthPath : "/dashboard";
   const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -40,7 +48,7 @@ export function RegisterForm({ googleEnabled = false }: { googleEnabled?: boolea
       return;
     }
 
-    router.push("/dashboard");
+    router.push(destination);
     router.refresh();
   }
 
@@ -48,7 +56,7 @@ export function RegisterForm({ googleEnabled = false }: { googleEnabled?: boolea
     <div className="space-y-4">
       {googleEnabled && (
         <>
-          <GoogleSignInButton text="Đăng ký nhanh với Google" />
+          <GoogleSignInButton text="Đăng ký nhanh với Google" callbackUrl={destination} />
 
           <div className="relative flex items-center justify-center">
             <div className="w-full border-t border-border"></div>

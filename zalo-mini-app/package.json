@@ -1,0 +1,29 @@
+{
+  "name": "kback-zalo-mini-app",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "KBack Zalo Mini App — dán link nhận hoàn tiền ngay trong Zalo",
+  "scripts": {
+    "start": "zmp start",
+    "dev": "vite",
+    "build": "vite build",
+    "typecheck": "tsc --noEmit",
+    "deploy": "zmp deploy"
+  },
+  "dependencies": {
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "react-router-dom": "6.28.0",
+    "zmp-sdk": "2.54.0",
+    "zmp-ui": "1.11.15-2"
+  },
+  "devDependencies": {
+    "@types/react": "18.3.12",
+    "@types/react-dom": "18.3.1",
+    "@vitejs/plugin-react": "4.3.4",
+    "typescript": "5.6.3",
+    "vite": "5.4.11",
+    "zmp-vite-plugin": "1.1.6"
+  }
+}

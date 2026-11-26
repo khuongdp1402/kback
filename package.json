@@ -9,6 +9,10 @@
     "start": "next start",
     "lint": "eslint",
     "db:seed": "tsx prisma/seed.ts",
+    "db:docker": "docker compose up -d postgres",
+    "db:local": "prisma dev --name kback --detach",
+    "db:migrate": "prisma migrate deploy",
+    "db:setup": "prisma migrate deploy && tsx prisma/seed.ts",
     "assemble-worker": "tsx scripts/assemble-worker.ts"
   },
   "dependencies": {

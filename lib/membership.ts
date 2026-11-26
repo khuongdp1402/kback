@@ -24,8 +24,10 @@ export const TIERS: {
   /** Share of the affiliate network's raw commission credited to the user, e.g. 0.5 = 50%. */
   shareRate: number;
 }[] = [
-  { tier: "MEMBER", label: "Thành viên", minSpend: 0, shareRate: 0.5 },
-  { tier: "SILVER", label: "Bạc", minSpend: 5_000_000, shareRate: 0.65 },
+  // Business split: the user keeps most of the commission (e.g. network pays 10% → user 7%,
+  // KBack 3% at the base tier). Tiers only add a small bonus so KBack always keeps ≥ 20%.
+  { tier: "MEMBER", label: "Thành viên", minSpend: 0, shareRate: 0.7 },
+  { tier: "SILVER", label: "Bạc", minSpend: 5_000_000, shareRate: 0.75 },
   { tier: "GOLD", label: "Vàng", minSpend: 20_000_000, shareRate: 0.8 },
 ];
 

@@ -1,6 +1,9 @@
 # Separate Expo/React Native project — not part of the Next.js web app deployment.
 mobile
 
+# Separate Zalo Mini App project — deployed to Zalo via `zmp deploy`, not to Vercel.
+zalo-mini-app
+
 # Never upload local env files or local generated artifacts to Vercel
 .env
 .env.*

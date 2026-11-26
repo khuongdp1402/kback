@@ -14,6 +14,8 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // Separate Expo/React Native project — its own toolchain, not part of this Next.js app.
     "mobile/**",
+    // Separate Zalo Mini App project (Vite + zmp-ui) — own toolchain, deployed via `zmp deploy`.
+    "zalo-mini-app/**",
   ]),
 ]);
 

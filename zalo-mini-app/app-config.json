@@ -1,0 +1,16 @@
+{
+  "app": {
+    "title": "KBack - Hoàn tiền mua sắm",
+    "headerTitle": "KBack",
+    "headerColor": "#a97318",
+    "textColor": "white",
+    "leftButton": "back",
+    "statusBar": "normal",
+    "actionBarHidden": false,
+    "hideIOSSafeAreaBottom": false,
+    "hideAndroidBottomNavigationBar": false
+  },
+  "listCSS": [],
+  "listSyncJS": [],
+  "listAsyncJS": []
+}

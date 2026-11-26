@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
-import { createAffiliateLinkForUser } from "@/lib/create-affiliate-link";
+import { createAffiliateLinkForUser, LINK_ERROR_MESSAGES } from "@/lib/create-affiliate-link";
 import { checkRateLimit } from "@/lib/rate-limit";
 
 const bodySchema = z.object({
@@ -10,8 +10,9 @@ const bodySchema = z.object({
 
 /**
  * Accepts any product/share URL the user pastes in, detects which marketplace it belongs to
- * from the domain, and returns a tracked affiliate link for that marketplace — same underlying
- * flow as picking a shop from the catalog, just entry point is a free-form URL instead.
+ * from the domain, and returns a tracked affiliate link for that marketplace plus an estimate of
+ * the cashback at the user's current tier — same underlying flow as picking a shop from the
+ * catalog, just entry point is a free-form URL instead.
  */
 export async function POST(request: Request) {
   const session = await auth();
@@ -38,23 +39,12 @@ export async function POST(request: Request) {
   const result = await createAffiliateLinkForUser(session.user.id, parsed.data.url);
 
   if (!result.ok) {
-    if (result.error === "unrecognized") {
-      return NextResponse.json(
-        {
-          error:
-            "Chưa hỗ trợ sàn này. Hiện chỉ nhận link từ Shopee, Lazada, Tiki, TikTok Shop và ShopeeFood.",
-        },
-        { status: 422 },
-      );
-    }
-    return NextResponse.json(
-      { error: "Sàn này chưa được cấu hình trên hệ thống" },
-      { status: 422 },
-    );
+    return NextResponse.json({ error: LINK_ERROR_MESSAGES[result.error] }, { status: 422 });
   }
 
   return NextResponse.json({
     trackedUrl: result.trackedUrl,
     shop: { name: result.shopName, logoEmoji: result.shopEmoji },
+    estimate: result.estimate,
   });
 }

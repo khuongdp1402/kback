@@ -11,12 +11,20 @@ import { MembershipCard } from "@/components/membership-card";
 import { statusLabel, statusTone } from "@/lib/transaction-status";
 import { PasteLinkForm } from "@/components/paste-link-form";
 
-export default async function DashboardPage() {
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ paste?: string }>;
+}) {
   const session = await auth();
   if (!session?.user?.id) {
     redirect("/login");
   }
   const userId = session.user.id;
+  const { paste } = await searchParams;
+  // Link pasted on the landing page before signup — auto-create the cashback link for it.
+  const initialPasteUrl =
+    typeof paste === "string" && /^https?:\/\//i.test(paste) ? paste.slice(0, 2048) : undefined;
 
   const [wallet, membership, recentTransactions] = await Promise.all([
     getWalletSummary(userId),
@@ -56,7 +64,7 @@ export default async function DashboardPage() {
             </p>
           </div>
         </div>
-        <PasteLinkForm />
+        <PasteLinkForm initialUrl={initialPasteUrl} />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">

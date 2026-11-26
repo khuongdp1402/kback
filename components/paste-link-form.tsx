@@ -1,28 +1,73 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import type { CashbackEstimate } from "@/lib/cashback-rate";
 
-export function PasteLinkForm() {
-  const [url, setUrl] = useState("");
+function vnd(n: number) {
+  return `${n.toLocaleString("vi-VN")}₫`;
+}
+
+export function EstimateSummary({ estimate }: { estimate: CashbackEstimate }) {
+  const mid = estimate.examples[1] ?? estimate.examples[0];
+  return (
+    <div className="rounded-lg bg-surface/80 p-3.5 text-sm">
+      <p className="text-foreground">
+        Bạn được hoàn <strong className="font-display tabular-nums text-brand-dark">{estimate.userRate}%</strong>{" "}
+        giá trị đơn{" "}
+        <span className="text-muted-foreground">(hạng {estimate.tierLabel})</span>
+        {mid && (
+          <>
+            {" "}
+            — đơn {vnd(mid.orderAmount)} ≈{" "}
+            <strong className="font-display tabular-nums text-accent">+{vnd(mid.cashback)}</strong>
+          </>
+        )}
+      </p>
+      <p className="mt-1 text-xs text-muted-foreground">
+        Tiền về ví sau khi sàn xác nhận đơn, thường {estimate.settlement}.
+        {estimate.topTierRate > estimate.userRate &&
+          ` Hạng Vàng được hoàn tới ${estimate.topTierRate}%.`}
+      </p>
+    </div>
+  );
+}
+
+interface PasteLinkFormProps {
+  /**
+   * "auth" (default): signed-in user — creates a tracked link.
+   * "public": landing-page visitor — only shows the estimate, then invites them to register
+   * while carrying the pasted URL through signup so they don't have to paste it again.
+   */
+  mode?: "auth" | "public";
+  /** Pre-filled URL (e.g. carried over from the landing page through registration). */
+  initialUrl?: string;
+}
+
+export function PasteLinkForm({ mode = "auth", initialUrl = "" }: PasteLinkFormProps) {
+  const [url, setUrl] = useState(initialUrl);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [estimate, setEstimate] = useState<CashbackEstimate | null>(null);
   const [result, setResult] = useState<{ trackedUrl: string; shopName: string; shopEmoji: string } | null>(
     null,
   );
+  const autoSubmitted = useRef(false);
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function submit(targetUrl: string) {
     setError(null);
     setResult(null);
+    setEstimate(null);
     setCopied(false);
     setLoading(true);
 
-    const res = await fetch("/api/affiliate/paste-link", {
+    const endpoint = mode === "public" ? "/api/affiliate/estimate" : "/api/affiliate/paste-link";
+    const res = await fetch(endpoint, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ url }),
+      body: JSON.stringify({ url: targetUrl }),
     });
     const data = await res.json().catch(() => ({}));
     setLoading(false);
@@ -31,6 +76,9 @@ export function PasteLinkForm() {
       setError(data.error ?? "Không thể tạo liên kết hoàn tiền");
       return;
     }
+
+    setEstimate(data.estimate ?? null);
+    if (mode === "public") return;
 
     // If trackedUrl is relative, convert to absolute URL
     let finalUrl = data.trackedUrl as string;
@@ -43,6 +91,20 @@ export function PasteLinkForm() {
       shopName: data.shop?.name ?? "",
       shopEmoji: data.shop?.logoEmoji ?? "🛍️",
     });
+  }
+
+  // A URL carried over from the landing page → create the link right away after signup.
+  useEffect(() => {
+    if (initialUrl && mode === "auth" && !autoSubmitted.current) {
+      autoSubmitted.current = true;
+      void submit(initialUrl);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialUrl, mode]);
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    void submit(url);
   }
 
   async function handleCopy() {
@@ -64,6 +126,15 @@ export function PasteLinkForm() {
     }
   }
 
+  const submitLabel =
+    mode === "public"
+      ? loading
+        ? "Đang tính..."
+        : "Xem được hoàn bao nhiêu"
+      : loading
+        ? "Đang tạo liên kết..."
+        : "Tạo liên kết hoàn tiền";
+
   return (
     <div>
       <form onSubmit={handleSubmit} className="flex flex-col gap-3 sm:flex-row">
@@ -76,11 +147,29 @@ export function PasteLinkForm() {
           className="w-full flex-1 rounded-full border border-border bg-surface px-4.5 py-2.5 text-sm text-foreground outline-none focus:border-brand focus:ring-2 focus:ring-brand/20"
         />
         <Button type="submit" disabled={loading} className="shrink-0">
-          {loading ? "Đang tạo liên kết..." : "Tạo liên kết hoàn tiền"}
+          {submitLabel}
         </Button>
       </form>
 
       {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+
+      {mode === "public" && estimate && (
+        <div className="mt-4 space-y-3 rounded-xl border border-brand/20 bg-brand-light/60 p-4.5 text-left shadow-xs">
+          <div className="flex items-center gap-2">
+            <span className="text-xl">{estimate.shopEmoji}</span>
+            <p className="text-sm font-semibold text-brand-dark">
+              KBack nhận hoàn tiền cho sản phẩm {estimate.shopName} này
+            </p>
+          </div>
+          <EstimateSummary estimate={estimate} />
+          <Link
+            href={`/register?url=${encodeURIComponent(url)}`}
+            className="inline-flex h-10 w-full items-center justify-center rounded-full bg-brand px-5 text-sm font-medium text-white hover:bg-brand-dark sm:w-auto"
+          >
+            Tạo tài khoản miễn phí để lấy link
+          </Link>
+        </div>
+      )}
 
       {result && (
         <div className="mt-4 rounded-xl border border-brand/20 bg-brand-light/60 p-4.5 shadow-xs">
@@ -90,6 +179,12 @@ export function PasteLinkForm() {
               Đã tạo liên kết thành công cho sàn {result.shopName}!
             </p>
           </div>
+
+          {estimate && (
+            <div className="mt-3">
+              <EstimateSummary estimate={estimate} />
+            </div>
+          )}
 
           <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
             <div className="relative flex-1">

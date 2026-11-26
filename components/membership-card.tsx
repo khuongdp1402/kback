@@ -31,7 +31,9 @@ export function MembershipCard({
       </div>
       <p className="font-display tabular-nums mt-2 text-3xl font-semibold">
         {Math.round(membership.shareRate * 100)}%
-        <span className="ml-1.5 font-sans text-sm font-normal text-white/50">hoa hồng gốc</span>
+        <span className="ml-1.5 font-sans text-sm font-normal text-white/50">
+          hoa hồng sàn trả được chuyển cho bạn
+        </span>
       </p>
 
       {membership.next ? (

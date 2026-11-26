@@ -11,14 +11,25 @@ nội dung và mã nguồn hoàn toàn mới.
 - **NextAuth v5** (Credentials provider, JWT session)
 - Kiến trúc adapter cho tích hợp bên ngoài: `lib/affiliate/*`, `lib/payout/*`
 
-## Bắt đầu nhanh
+## Bắt đầu nhanh (database local)
 
 ```bash
 npm install
-npx prisma migrate dev   # áp schema lên database Postgres trỏ bởi DATABASE_URL trong .env
-npm run db:seed          # tạo 5 shop mẫu + 1 tài khoản demo + 1 tài khoản admin
+cp .env.example .env     # điền AUTH_SECRET; DATABASE_URL theo 1 trong 2 cách dưới
+
+# Cách A — Docker (Postgres 16 từ docker-compose.yml, cổng 5432):
+npm run db:docker
+#   DATABASE_URL="postgresql://kback:kback_secret_password_2026@localhost:5432/kback?schema=public"
+
+# Cách B — không cần Docker (Prisma local Postgres, cổng 51214):
+npm run db:local
+#   DATABASE_URL="postgres://postgres:postgres@localhost:51214/template1?sslmode=disable"
+
+npm run db:setup         # áp migrations + tạo 5 shop mẫu, tài khoản demo & admin
 npm run dev
 ```
+
+Chạy cả Zalo Mini App ở local: xem [zalo-mini-app/README.md](zalo-mini-app/README.md).
 
 Mở [http://localhost:3000](http://localhost:3000). Đăng nhập bằng tài khoản demo:
 
@@ -140,8 +151,8 @@ phẩm), `Transaction` (đơn hàng + hoa hồng gốc + hoa hồng đã chia th
 ## Hạng thành viên (`lib/membership.ts`)
 
 Hạng được **tính động theo tổng giá trị đơn hàng đã xác nhận của chính người dùng** (không lưu
-cứng, không có referral/mời bạn). Ba hạng: Thành viên (0đ+, 50% hoa hồng gốc) → Bạc (≥5tr, 65%)
-→ Vàng (≥20tr, 80%). Đây là ranh giới pháp lý quan trọng — xem mục dưới.
+cứng, không có referral/mời bạn). Ba hạng: Thành viên (0đ+, 70% hoa hồng gốc) → Bạc (≥5tr, 75%)
+→ Vàng (≥20tr, 80%). Ví dụ sàn trả 10% → khách mới nhận 7%, KBack giữ 3%. Đây là ranh giới pháp lý quan trọng — xem mục dưới.
 
 ## Quản trị (`/admin`)
 

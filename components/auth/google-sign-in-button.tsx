@@ -6,18 +6,20 @@ import { signIn } from "next-auth/react";
 interface GoogleSignInButtonProps {
   text?: string;
   className?: string;
+  callbackUrl?: string;
 }
 
 export function GoogleSignInButton({
   text = "Đăng nhập bằng Google",
   className = "",
+  callbackUrl = "/dashboard",
 }: GoogleSignInButtonProps) {
   const [loading, setLoading] = useState(false);
 
   async function handleSignIn() {
     try {
       setLoading(true);
-      await signIn("google", { callbackUrl: "/dashboard" });
+      await signIn("google", { callbackUrl });
     } catch (error) {
       console.error("Lỗi đăng nhập Google:", error);
       setLoading(false);

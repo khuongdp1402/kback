@@ -6,7 +6,7 @@ import {
   type TelegramInlineKeyboardMarkup,
   type TelegramUpdate,
 } from "@/lib/telegram";
-import { createAffiliateLinkForUser } from "@/lib/create-affiliate-link";
+import { createAffiliateLinkForUser, LINK_ERROR_MESSAGES } from "@/lib/create-affiliate-link";
 import { getWalletSummary } from "@/lib/wallet";
 import { formatVnd } from "@/lib/format";
 
@@ -152,17 +152,19 @@ async function handlePasteLink(chatId: number, text: string) {
   const result = await createAffiliateLinkForUser(user.id, url);
 
   if (!result.ok) {
-    const message =
-      result.error === "unrecognized"
-        ? "Chưa hỗ trợ sàn này. Hiện chỉ nhận link từ Shopee, Lazada, Tiki, TikTok Shop và ShopeeFood."
-        : "Sàn này chưa được cấu hình trên hệ thống.";
-    await sendTelegramMessage(chatId, message);
+    await sendTelegramMessage(chatId, LINK_ERROR_MESSAGES[result.error]);
     return;
   }
 
+  const { estimate } = result;
+  const example = estimate.examples[1] ?? estimate.examples[0];
+  const estimateLine = example
+    ? `Bạn được hoàn *${estimate.userRate}%* (hạng ${estimate.tierLabel}) — đơn ${formatVnd(example.orderAmount)} ≈ +${formatVnd(example.cashback)}.\nTiền về ví sau khi sàn xác nhận, thường ${estimate.settlement}.`
+    : "";
+
   await sendTelegramMessage(
     chatId,
-    `${result.shopEmoji} Đã nhận diện *${result.shopName}*!\n\nMua qua link này để nhận hoàn tiền:\n${result.trackedUrl}`,
+    `${result.shopEmoji} Đã nhận diện *${result.shopName}*!\n\n${estimateLine}\n\nMua qua link này để nhận hoàn tiền:\n${result.trackedUrl}`,
     { disableWebPagePreview: true },
   );
 }

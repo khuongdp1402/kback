@@ -1,0 +1,178 @@
+/* KBack Zalo Mini App — colors match the web app's tokens (gold brand, warm background). */
+:root {
+  --kb-brand: #a97318;
+  --kb-brand-dark: #8a5d12;
+  --kb-brand-light: #f6ecd8;
+  --kb-accent: #1f8a5b;
+  --kb-bg: #fbf8f2;
+  --kb-surface: #ffffff;
+  --kb-muted: #6b6457;
+  --kb-border: #ece4d4;
+}
+
+body {
+  background: var(--kb-bg);
+}
+
+.kb-page {
+  background: var(--kb-bg);
+  padding: 12px 16px 96px;
+}
+
+.kb-fullscreen {
+  min-height: 100vh;
+  background: var(--kb-bg);
+}
+
+.kb-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.kb-pad {
+  padding: 24px;
+}
+
+.kb-text-center {
+  text-align: center;
+}
+
+.kb-hero {
+  padding: 8px 2px 16px;
+}
+
+.kb-hero-title {
+  color: #2b1e04;
+}
+
+.kb-hero-sub {
+  color: var(--kb-muted);
+  margin-top: 6px;
+}
+
+.kb-card {
+  background: var(--kb-surface);
+  border: 1px solid var(--kb-border);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.kb-estimate {
+  background: linear-gradient(135deg, var(--kb-brand-light) 0%, var(--kb-surface) 70%);
+  border-color: #e3cf9f;
+}
+
+.kb-actions {
+  display: grid;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.kb-form {
+  display: grid;
+  gap: 12px;
+}
+
+.kb-examples {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.kb-example {
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 10px;
+  padding: 8px;
+  text-align: center;
+}
+
+.kb-wallet {
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 12px;
+  color: #2b1e04;
+  background: linear-gradient(135deg, #f5d271 0%, #e7b74e 55%, #c9952f 100%);
+}
+
+.kb-wallet-label {
+  color: rgba(43, 30, 4, 0.7);
+}
+
+.kb-wallet-amount {
+  color: #2b1e04;
+  margin-top: 4px;
+}
+
+.kb-list-row {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--kb-border);
+}
+
+.kb-list-row:last-child {
+  border-bottom: none;
+}
+
+.kb-row-gap {
+  gap: 10px;
+}
+
+.kb-right {
+  text-align: right;
+}
+
+.kb-emoji {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.kb-steps {
+  margin: 8px 0 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 6px;
+}
+
+.kb-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--kb-brand-light);
+  color: var(--kb-brand-dark);
+}
+
+.kb-badge-success {
+  background: #e3f4ea;
+  color: #1f6f48;
+}
+
+.kb-badge-warning {
+  background: #fdf1d6;
+  color: #8a5d12;
+}
+
+.kb-badge-danger {
+  background: #fbe4e4;
+  color: #a12b2b;
+}
+
+.kb-brand {
+  color: var(--kb-brand-dark);
+}
+
+.kb-accent {
+  color: var(--kb-accent);
+}
+
+.kb-muted {
+  color: var(--kb-muted);
+}
+
+.kb-mt8 {
+  margin-top: 8px;
+}

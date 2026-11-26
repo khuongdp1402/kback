@@ -54,6 +54,11 @@ model User {
   /// KBack Telegram bot resolve which KBack account a message came from, so paste-link clicks
   /// (and their eventual cashback) are attributed to the right user's wallet.
   telegramChatId String?       @unique
+  /// App-scoped Zalo user id (from graph.zalo.me /me), set when the user signs in through the
+  /// KBack Zalo Mini App. Zalo-only users get a placeholder `email` on the reserved `.invalid`
+  /// TLD (see lib/zalo/users.ts) since email is required — it is never mailed or shown.
+  zaloUserId    String?        @unique
+  avatarUrl     String?
   createdAt     DateTime       @default(now())
   clicks        Click[]
   transactions  Transaction[]
